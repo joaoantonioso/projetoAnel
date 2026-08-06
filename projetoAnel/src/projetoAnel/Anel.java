@@ -83,6 +83,12 @@ public class Anel {
 		return true;
 	}
 	
+	/**
+	 * Analisa se o conjunto é fechado na operação do parâmetro.
+	 * 
+	 * @param operacao tabela da operacao de adição ou multiplicação
+	 * @return true se for fechado; false se não for fechado 
+	 */
 	private boolean ehFechado(int[][] operacao) {
 		for (int a=0; a < operacao.length; a++) {
 			for (int b=0; b < operacao.length; b++) {
@@ -94,6 +100,12 @@ public class Anel {
 		return true;
 	}
 	
+	/**
+	 * Analisa se o conjunto é associativo na operação do parâmetro.
+	 * 
+	 * @param operacao tabela da operacao de adição ou multiplicação
+	 * @return true se for associativo; false se não for associativo
+	 */
 	private boolean ehAssociativo(int[][] operacao) {
 		for (int a=0; a < operacao.length; a++) {
 			for (int b=0; b < operacao.length; b++) {
@@ -109,6 +121,12 @@ public class Anel {
 		return true;
 	}
 	
+	/**
+	 * Analisa se o conjunto é comutativo na operação do parâmetro.
+	 * 
+	 * @param operacao tabela da operacao de adição ou multiplicação
+	 * @return true se for comutativo; false se não for comutativo
+	 */
 	private boolean ehComutativo(int[][] operacao) {
 		for (int a=0; a < operacao.length; a++) {
 			for (int b=0; b < operacao.length; b++) {
@@ -120,6 +138,13 @@ public class Anel {
 		return true;
 	}
 	
+	/**
+	 * Analisa se o conjunto possui o elemento identidade da adição de
+	 * inteiros, o elemento 0.
+	 * 
+	 * @return true se possuir o elemento identidade da adição;
+	 *  false se não possuir o elemento identidade da adição
+	 */
 	private boolean possuiElementoIdentidadeAdicao() {
 		if(this.conjunto.contains(0)) {
 			return true;
@@ -127,6 +152,13 @@ public class Anel {
 		return false;
 	}
 		
+	/**
+	 * Analisa se o conjunto possui o elemento identidade da multiplicação de
+	 * inteiros, o elemento 1.
+	 * 
+	 * @return true se possuir o elemento identidade da multiplicação;
+	 *  false se não possuir o elemento identidade da multiplicação
+	 */
 	private boolean possuiElementoIdentidadeMultiplicacao() {
 		if(this.conjunto.contains(1)) {
 			return true;
@@ -134,6 +166,13 @@ public class Anel {
 		return false;
 	}
 	
+	/**
+	 * Analisa se o conjunto possui os inversos de todos os elementos
+	 * na adição.
+	 * 
+	 * @return true se possuir os inversos de todos os elementos da adição;
+	 *  false se não possuir os inversos de todos os elementos da adição
+	 */
 	private boolean possuiElementoInversoAdicao() {
 		for (int a=0; a < this.adicao.length; a++) {
 			boolean temInverso = false;
@@ -150,6 +189,13 @@ public class Anel {
 		return true;
 	}
 	
+	/**
+	 * Analisa se o conjunto possui os inversos dos elementos não nulos da
+	 * multiplicação
+	 * 
+	 * @return true se possuir os inversos dos elementos não nulos da multiplicação;
+	 *  false se não possuir os inversos dos elementos não nulos da multiplicação
+	 */
 	private boolean possuiElementoInversoMultiplicacaoNaoNulos() {
 		Map<Integer, Integer> inversos = encontrarInversosMultiplicacaoNaoNulos();
 		int tamanhoConjuntoSemZero = conjunto.size() - 1;
@@ -159,6 +205,7 @@ public class Anel {
 		}
 		return false;
 	}
+	
 	
 	private Map<Integer, Integer> encontrarInversosMultiplicacaoNaoNulos() {
 		List<Integer> elementos = new ArrayList<>(this.conjunto);
@@ -181,6 +228,11 @@ public class Anel {
 		return inversos;
 	}
 	
+	/**
+	 * Analisa se o conjunto é distributivo.
+	 * 
+	 * @return true se for distributivo; false se não for distributivo
+	 */
 	private boolean ehDistributivo() {
 		for (int a=0; a < this.multiplicacao.length; a++) {
 			for (int b=0; b < this.multiplicacao.length; b++) {
@@ -199,6 +251,13 @@ public class Anel {
 		return true;
 	}
 	
+	/**
+	 * Calcula o máximo divisor comum entre dois números.
+	 * 
+	 * @param a primeiro número
+	 * @param b segundo número
+	 * @return máximo divisor comum entre a e b
+	 */
 	private int mdc(int a, int b) {
 		if (b == 0) {
 			return a;
@@ -206,6 +265,13 @@ public class Anel {
 		return mdc(b, a%b);
 	}
 	
+	/**
+	 * Encontra e retorna os divisores de zero do conjunto Zn. Um elemento
+	 * é divisor de zero se não for nulo e o mdc entre ele e o módulo for
+	 * maior que 1.
+	 * 
+	 * @return lista com os divisores de zero do conjunto
+	 */
 	private List<Integer> encontrarDivisoresZero() {
 		int b = this.conjunto.size();
 		List<Integer> divisoresZero = new ArrayList<>();
