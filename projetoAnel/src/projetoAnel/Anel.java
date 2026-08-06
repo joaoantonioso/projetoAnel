@@ -1,11 +1,24 @@
 package projetoAnel;
 import java.util.*;
 
+/**
+ * Essa classe analisa vários fatores, a partir de um conjunto e suas tabelas
+ * de adição e multiplicação, para definir se o conjunto é um corpo, um anel 
+ * comutativo com identidade, um anel comutativo, um anel com identidade, um
+ * anel, ou não é um anel.
+ */
 public class Anel {
 	private int[][] adicao;
 	private int[][] multiplicacao;
 	private LinkedHashSet<Integer> conjunto;
 	
+	/**
+	 * Constrói uma instância de Anel.
+	 * 
+	 * @param adicao tabela de adição do conjunto
+	 * @param multiplicacao tabela de multiplicação do conjunto
+	 * @param conjunto elementos do conjunto
+	 */
 	public Anel(int[][] adicao, int[][]multiplicacao, LinkedHashSet<Integer> conjunto) {
 		this.adicao = adicao;
 		this.multiplicacao = multiplicacao;
@@ -13,7 +26,15 @@ public class Anel {
 		
 	}
 	
-	public String checarTipo() {
+	/**
+	 * Checa e retorna tipo do conjunto, se é um anel, o tipo e se é um corpo. 
+	 * Analisa se é um anel, se é comutativo na multiplicação, se possui elemento
+	 * identidade na multiplicação e se possui os inversos dos elementos não nulos
+	 * da multiplicação.
+	 * 
+	 * @return tipo do conjunto
+	 */
+	private String checarTipo() {
 		if (ehAnel() && ehComutativo(this.multiplicacao) && possuiElementoIdentidadeMultiplicacao() && possuiElementoInversoMultiplicacaoNaoNulos()) {
 			return "Esse conjunto é um corpo.";
 		}
@@ -32,6 +53,13 @@ public class Anel {
 		return "Esse conjunto não é um anel.";
 	}
 	
+	/**
+	 * Função para definir se é um anel. Analisa se é um grupo abeliano na soma,
+	 * se é fechado na multiplicação, se é associativo na multiplicação e se é
+	 * distributivo. 
+	 * 
+	 * @return true se for um anel; false se não for um anel
+	 */
 	private boolean ehAnel() {
 		if (ehGrupoAbelianoAdicao() && ehFechado(this.multiplicacao) && ehAssociativo(this.multiplicacao) && ehDistributivo()) {
 			return true;
@@ -39,6 +67,14 @@ public class Anel {
 		return false;
 	}
 	
+	/**
+	 * Função para definir se é um grupo abeliano na adição. Analisa alguns
+	 * fatores da tabela de adição, como se é fechado, se é associativo, se 
+	 * é comutativo, se possui elemento identidade e se possui os inversos
+	 * dos elementos.
+	 * 
+	 * @return true se for um grupo abeliano; false se não for um grupo abeliano
+	 */
 	private boolean ehGrupoAbelianoAdicao() {
 		if (!(ehFechado(this.adicao) && ehAssociativo(this.adicao) && ehComutativo(this.adicao)
 				&& possuiElementoIdentidadeAdicao() && possuiElementoInversoAdicao())) {
@@ -163,6 +199,24 @@ public class Anel {
 		return true;
 	}
 	
+	private int mdc(int a, int b) {
+		if (b == 0) {
+			return a;
+		}
+		return mdc(b, a%b);
+	}
+	
+	private List<Integer> encontrarDivisoresZero() {
+		int b = this.conjunto.size();
+		List<Integer> divisoresZero = new ArrayList<>();
+		for(int a: this.conjunto) {
+			if(a != 0 && mdc(a,b) > 1) {
+				divisoresZero.add(a);
+			}
+		}
+		return divisoresZero;
+	}
+	
 	public String exibirInformacoes() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("=".repeat(30) + "\n");
@@ -199,9 +253,17 @@ public class Anel {
 		sb.append(String.format("Possui um elemento inverso para cada elemento do conjunto não nulo? %b\n", this.possuiElementoInversoMultiplicacaoNaoNulos()));
 		sb.append("\n");
 		
+		sb.append("--> Quais elementos são divisores de Zero?\n");
+		
+		List<Integer> divisoresZero = this.encontrarDivisoresZero();
+		if(divisoresZero.size() == 0) {
+			sb.append("Não possui elemento divisor de zero\n");
+		} else {
+			sb.append(divisoresZero + "\n");
+		}
+		sb.append("\n");
+		
 		sb.append(String.format("Conclusão: %s", this.checarTipo()));
-		
-		
 		
 		return sb.toString();
 	}
