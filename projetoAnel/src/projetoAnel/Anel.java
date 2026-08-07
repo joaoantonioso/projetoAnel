@@ -9,8 +9,12 @@ import java.util.*;
  */
 public class Anel {
 	private int[][] adicao;
+	private int[][] adicaoI;
 	private int[][] multiplicacao;
+	private int[][] multiplicacaoI;
 	private LinkedHashSet<Integer> conjunto;
+	private List<Integer> elementos;
+	private Map<Integer, Integer> valorParaIndice;
 	
 	/**
 	 * Constrói uma instância de Anel.
@@ -22,9 +26,38 @@ public class Anel {
 	public Anel(int[][] adicao, int[][]multiplicacao, LinkedHashSet<Integer> conjunto) {
 		this.adicao = adicao;
 		this.multiplicacao = multiplicacao;
-		this.conjunto = conjunto;
 		
-	}
+		this.elementos = new ArrayList<>(conjunto);
+	    this.valorParaIndice = new HashMap<>();
+		
+		for (int i = 0; i < this.elementos.size(); i++) {
+	        this.valorParaIndice.put(this.elementos.get(i), i);
+	    }
+		this.adicaoI = converterParaIndices(adicao);
+		this.multiplicacaoI = converterParaIndices(multiplicacao);
+		this.conjunto = conjunto;
+	} 
+	
+	
+	private int[][] converterParaIndices(int[][] tabelaOriginal) {
+		int n = tabelaOriginal.length;
+	    int[][] tabelaIndices = new int[n][n];
+
+	    for (int i = 0; i < n; i++) {
+	        for (int j = 0; j < n; j++) {
+	            int valorReal = tabelaOriginal[i][j];
+	            
+	            Integer indiceMapped = this.valorParaIndice.get(valorReal);
+	            
+	            if (indiceMapped == null) {
+	                throw new IllegalArgumentException("Não é fechado, logo não é Anel");
+	            }
+	            
+	            tabelaIndices[i][j] = indiceMapped;
+	        }
+	    }
+	    return tabelaIndices;
+    }
 	
 	/**
 	 * Checa e retorna tipo do conjunto, se é um anel, o tipo e se é um corpo. 
@@ -61,7 +94,7 @@ public class Anel {
 	 * @return true se for um anel; false se não for um anel
 	 */
 	private boolean ehAnel() {
-		if (ehGrupoAbelianoAdicao() && ehFechado(this.multiplicacao) && ehAssociativo(this.multiplicacao) && ehDistributivo()) {
+		if (ehGrupoAbelianoAdicao() && ehFechado(this.multiplicacao) && ehAssociativo(this.multiplicacaoI) && ehDistributivo()) {
 			return true;
 		}
 		return false;
@@ -76,7 +109,7 @@ public class Anel {
 	 * @return true se for um grupo abeliano; false se não for um grupo abeliano
 	 */
 	private boolean ehGrupoAbelianoAdicao() {
-		if (!(ehFechado(this.adicao) && ehAssociativo(this.adicao) && ehComutativo(this.adicao)
+		if (!(ehFechado(this.adicao) && ehAssociativo(this.adicaoI) && ehComutativo(this.adicao)
 				&& possuiElementoIdentidadeAdicao() && possuiElementoInversoAdicao())) {
 			return false;
 		}
@@ -138,6 +171,22 @@ public class Anel {
 		return true;
 	}
 	
+	private int elementoIdentidadeAdicao() {
+	    List<Integer> elem = new ArrayList<>(this.conjunto);
+	    for (int e : elem) {
+	        int idx = elem.indexOf(e);
+	        boolean ehZero = true;
+	        for (int i = 0; i < this.adicao.length; i++) {
+	            if (this.adicao[i][idx] != elem.get(i) || this.adicao[idx][i] != elem.get(i)) {
+	                ehZero = false;
+	                break;
+	            }
+	        }
+	        if (ehZero) return e;
+	    }
+	    return -1;
+	}
+	
 	/**
 	 * Analisa se o conjunto possui o elemento identidade da adição de
 	 * inteiros, o elemento 0.
@@ -146,12 +195,28 @@ public class Anel {
 	 *  false se não possuir o elemento identidade da adição
 	 */
 	private boolean possuiElementoIdentidadeAdicao() {
-		if(this.conjunto.contains(0)) {
+		if(elementoIdentidadeAdicao() != -1) {
 			return true;
 		}
 		return false;
 	}
-		
+	
+	private int elementoIdentidadeMultiplicacao() {
+	    List<Integer> elem = new ArrayList<>(this.conjunto);
+	    for (int e : elem) {
+	        int idx = elem.indexOf(e);
+	        boolean ehUm = true;
+	        for (int i = 0; i < this.multiplicacao.length; i++) {
+	            if (this.multiplicacao[i][idx] != elem.get(i) || this.multiplicacao[idx][i] != elem.get(i)) {
+	                ehUm = false;
+	                break;
+	            }
+	        }
+	        if (ehUm) return e;
+	    }
+	    return -1;
+	}
+	
 	/**
 	 * Analisa se o conjunto possui o elemento identidade da multiplicação de
 	 * inteiros, o elemento 1.
@@ -160,7 +225,7 @@ public class Anel {
 	 *  false se não possuir o elemento identidade da multiplicação
 	 */
 	private boolean possuiElementoIdentidadeMultiplicacao() {
-		if(this.conjunto.contains(1)) {
+		if(elementoIdentidadeMultiplicacao() != -1) {
 			return true;
 		}
 		return false;
@@ -174,10 +239,11 @@ public class Anel {
 	 *  false se não possuir os inversos de todos os elementos da adição
 	 */
 	private boolean possuiElementoInversoAdicao() {
+		int e = elementoIdentidadeAdicao();
 		for (int a=0; a < this.adicao.length; a++) {
 			boolean temInverso = false;
 			for (int b=0; b < this.adicao.length; b++) {
-				if (this.adicao[a][b] == 0) {
+				if (this.adicao[a][b] == e) {
 					temInverso = true;
 					break;
 				}
@@ -198,34 +264,51 @@ public class Anel {
 	 */
 	private boolean possuiElementoInversoMultiplicacaoNaoNulos() {
 		Map<Integer, Integer> inversos = encontrarInversosMultiplicacaoNaoNulos();
-		int tamanhoConjuntoSemZero = conjunto.size() - 1;
-		
-		if (inversos.size() == tamanhoConjuntoSemZero) {
-			return true;
-		}
-		return false;
+	    
+	    
+	    if (elementoIdentidadeAdicao() == -1 || elementoIdentidadeMultiplicacao() == -1) {
+	        return false;
+	    }
+
+	    int tamanhoConjuntoSemZero = conjunto.size() - 1;
+	    
+	    if (tamanhoConjuntoSemZero <= 0) {
+	        return false;
+	    }
+	    
+	    return inversos.size() == tamanhoConjuntoSemZero;
 	}
 	
 	
 	private Map<Integer, Integer> encontrarInversosMultiplicacaoNaoNulos() {
 		List<Integer> elementos = new ArrayList<>(this.conjunto);
-		Map<Integer, Integer> inversos = new LinkedHashMap<>();
-		
-		
-		int indiceZero = elementos.indexOf(0);
-		
-		for (int a=0; a < this.multiplicacao.length; a++) {
-			if (a == indiceZero) {
-				continue;
-			}
-			for (int b=0; b < this.multiplicacao.length; b++) {
-				if (this.multiplicacao[a][b] == 1) {
-					inversos.put(a, b);
-					break;
-				}
-			}
-		}
-		return inversos;
+	    Map<Integer, Integer> inversos = new LinkedHashMap<>();
+	    
+	    Integer eA = elementoIdentidadeAdicao();
+	    Integer eM = elementoIdentidadeMultiplicacao();
+
+	    if (eA == -1 || eM == -1 || eM != 1) {
+	        return inversos;
+	    }
+
+	    int indiceEA = elementos.indexOf(eA);
+	    
+	    for (int a = 0; a < this.multiplicacao.length; a++) {
+	        if (a == indiceEA) {
+	            continue; 
+	        }
+	        for (int b = 0; b < this.multiplicacao.length; b++) {
+	            if (b == indiceEA) {
+	                continue;
+	            }
+
+	            if (this.multiplicacao[a][b] == eM && this.multiplicacao[b][a] == eM) {
+	                inversos.put(elementos.get(a), elementos.get(b));
+	                break;
+	            }
+	        }
+	    }
+	    return inversos;
 	}
 	
 	/**
@@ -237,32 +320,20 @@ public class Anel {
 		for (int a=0; a < this.multiplicacao.length; a++) {
 			for (int b=0; b < this.multiplicacao.length; b++) {
 				for (int c = 0; c < this.multiplicacao.length; c++) {
-					int ladoEsquerdo1 = this.multiplicacao[a][this.adicao[b][c]]; 
-					int ladoDireito1 = this.adicao[this.multiplicacao[a][b]][this.multiplicacao[a][c]]; 
-					int ladoEsquerdo2 = this.multiplicacao[this.adicao[a][b]][c]; 
-					int ladoDireito2 =  this.adicao[this.multiplicacao[a][c]][this.multiplicacao[b][c]]; 
-					if(!(ladoEsquerdo1 == ladoDireito1 || ladoEsquerdo2 == ladoDireito2)) {
+					int ladoEsquerdo1 = this.multiplicacaoI[a][this.adicaoI[b][c]]; 
+					int ladoDireito1 = this.adicaoI[this.multiplicacaoI[a][b]][this.multiplicacaoI[a][c]]; 
+					int ladoEsquerdo2 = this.multiplicacaoI[this.adicaoI[a][b]][c]; 
+					int ladoDireito2 =  this.adicaoI[this.multiplicacaoI[a][c]][this.multiplicacaoI[b][c]]; 
+					
+					if(ladoEsquerdo1 != ladoDireito1 || ladoEsquerdo2 != ladoDireito2) {
 						return false;
 					}
+					
 					
 				}
 			}
 		}
 		return true;
-	}
-	
-	/**
-	 * Calcula o máximo divisor comum entre dois números.
-	 * 
-	 * @param a primeiro número
-	 * @param b segundo número
-	 * @return máximo divisor comum entre a e b
-	 */
-	private int mdc(int a, int b) {
-		if (b == 0) {
-			return a;
-		}
-		return mdc(b, a%b);
 	}
 	
 	/**
@@ -273,14 +344,31 @@ public class Anel {
 	 * @return lista com os divisores de zero do conjunto
 	 */
 	private List<Integer> encontrarDivisoresZero() {
-		int b = this.conjunto.size();
-		List<Integer> divisoresZero = new ArrayList<>();
-		for(int a: this.conjunto) {
-			if(a != 0 && mdc(a,b) > 1) {
-				divisoresZero.add(a);
-			}
-		}
-		return divisoresZero;
+		List<Integer> elementos = new ArrayList<>(this.conjunto);
+	    List<Integer> divisoresZero = new ArrayList<>();
+	    
+	    
+	    int e = elementoIdentidadeAdicao(); 
+	    int indiceNeutro = elementos.indexOf(e);
+
+	    
+	    for (int a = 0; a < this.multiplicacao.length; a++) {
+	        if (a == indiceNeutro) continue; 
+
+	        for (int b = 0; b < this.multiplicacao.length; b++) {
+	            if (b == indiceNeutro) continue; 
+
+	            
+	            if (this.multiplicacao[a][b] == e) {
+	                int valorA = elementos.get(a);
+	                if (!divisoresZero.contains(valorA)) {
+	                    divisoresZero.add(valorA);
+	                }
+	                break;
+	            }
+	        }
+	    }
+	    return divisoresZero;
 	}
 	
 	public String exibirInformacoes() {
@@ -292,8 +380,8 @@ public class Anel {
 		
 		sb.append("PROPRIEDADES DA ADIÇÃO:\n");
 		sb.append(String.format("--> Fechado? %b\n", this.ehFechado(adicao)));
-		sb.append(String.format("--> Associativo? %b\n", this.ehAssociativo(adicao)));
-		sb.append(String.format("--> Possui o elemento identidade (zero)? %b\n", this.possuiElementoIdentidadeAdicao()));
+		sb.append(String.format("--> Associativo? %b\n", this.ehAssociativo(adicaoI)));
+		sb.append(String.format("--> Possui o elemento identidade? %b\n", this.possuiElementoIdentidadeAdicao()));
 		sb.append(String.format("--> Possui elemento inverso para cada elemento do conjunto? %b\n", this.possuiElementoInversoAdicao()));
 		sb.append(String.format("--> Comutativo? %b\n", this.ehComutativo(adicao)));
 		sb.append(String.format("--> Forma um grupo abeliano? %b\n", this.ehGrupoAbelianoAdicao()));
@@ -301,15 +389,15 @@ public class Anel {
 		
 		sb.append("PROPRIEDADES DA MULTIPLICAÇÃO:\n");
 		sb.append(String.format("--> Fechado? %b\n", this.ehFechado(multiplicacao)));
-		sb.append(String.format("--> Associativo? %b\n", this.ehAssociativo(multiplicacao)));
+		sb.append(String.format("--> Associativo? %b\n", this.ehAssociativo(multiplicacaoI)));
 		sb.append(String.format("--> Distributivo? %b\n", this.ehDistributivo()));
 		sb.append(String.format("--> Comutativo? %b\n", this.ehComutativo(multiplicacao)));
-		sb.append(String.format("--> Possui o elemento identidade (um)? %b\n", this.possuiElementoIdentidadeMultiplicacao()));
+		sb.append(String.format("--> Possui o elemento identidade? %b\n", this.possuiElementoIdentidadeMultiplicacao()));
 		sb.append("--> Quais elementos não nulos possuem um inverso?\n");
 		
 		Map<Integer, Integer> inversos = this.encontrarInversosMultiplicacaoNaoNulos();
 		if (inversos.size() == 0) {
-			sb.append("Não possui nenhum elemento com inverso para multiplicação");
+			sb.append("Não possui nenhum elemento com inverso para multiplicação\n");
 		} else {
 			for (Map.Entry<Integer, Integer> entry : inversos.entrySet()) {
 				sb.append(String.format("%d - %d\n", entry.getKey(), entry.getValue()));

@@ -38,7 +38,7 @@ public class MainAnel {
 		
 	}
 	
-	public static LinkedHashSet<Integer> definirConjunto(int quantElem, Scanner sc) {
+	private static LinkedHashSet<Integer> definirConjunto(int quantElem, Scanner sc) {
 		LinkedHashSet<Integer> conjunto = new LinkedHashSet<>();
 		
 		System.out.println("=".repeat(32));
@@ -64,7 +64,7 @@ public class MainAnel {
 	    return conjunto;
 	}
 	
-	public static Map<Integer, int[]> definirTabela(String operacao, int quantElem, Scanner sc) {
+	private static Map<Integer, int[]> definirTabela(String operacao, int quantElem, Scanner sc) {
 		Map<Integer, int[]> elementosPorLinha = new LinkedHashMap<>();
 		
 		System.out.println("=".repeat(32));
@@ -86,7 +86,7 @@ public class MainAnel {
 		return elementosPorLinha;
 	}
 
-	public static void exibirTabela(Map<Integer, int[]> tabela) {
+	private static void exibirTabela(Map<Integer, int[]> tabela) {
 		for (Integer linha : tabela.keySet()) {
 			int[] elemLinha = tabela.get(linha);
 			for (int i = 0; i < elemLinha.length; i++) {
@@ -96,7 +96,7 @@ public class MainAnel {
 		}
 	}
 	
-	public static int[][] ajustarTabela(Map<Integer, int[]> tabela) {
+	private static int[][] ajustarTabela(Map<Integer, int[]> tabela) {
 		int tam = tabela.size();
 		int[][] tabelaFinal = new int[tam][tam];
 		
